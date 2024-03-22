@@ -1,6 +1,5 @@
 import os
 
-
 def print_log(args, string):
     """
     Output the input string to a log file and to the console via the print() function.
@@ -9,3 +8,7 @@ def print_log(args, string):
     log_file.write(string + '\n')
     log_file.flush()
     print(string)
+
+def print_log_args(args):
+    print(args)
+
