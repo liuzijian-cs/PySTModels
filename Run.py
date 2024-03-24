@@ -1,7 +1,8 @@
 import argparse
-
 import torch
 import numpy as np
+
+from utils.data_function import data_loader
 
 if __name__ == '__main__':
 
@@ -10,19 +11,22 @@ if __name__ == '__main__':
 
     # 1.1 Basic config:
     parser.add_argument('--device', type=str, default='cuda:0', help='cuda or cpu')
+    parser.add_argument('--num_workers', type=int, default=16, help='number of data loading workers')
     parser.add_argument('--model', type=str, default='iTransformer',
                         help='model list: [iTransformer]')
     parser.add_argument('--seed', type=int, default=None, help='random seed')
+    parser.add_argument('--model_save_path', type=str, default='./model_save')
+    parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
     parser.add_argument('--data', type=str, default='PEMS',
                         help='data list: [PEMS], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path',type=str,default='./dataset/PEMS/PEMS04.npz')
+    parser.add_argument('--data_path',type=str,default='./data/PEMS/PEMS04.npz')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',
-                        hfelp='features list: [M, S, MS], ''M: mul predict mul, S: uni pred uni , MS: mul pred uni')
+                        help='features list: [M, S, MS], ''M: mul predict mul, S: uni pred uni , MS: mul pred uni')
     parser.add_argument('--target', type=str, default='OT',help='target feature in S or MS task')
     # train (X):|--------------- seq_len ---------------|
     # label (Y):                        |---label_len---|--pred_len--|
@@ -35,6 +39,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_ratio', type=float, default=0.2, help='test ratio')
 
     # 1.2 Model arguments:
+    parser.add_argument('--batch_size', type=int, default=32, help='Based on the size of the GPU memory')
 
 
 
@@ -61,7 +66,7 @@ if __name__ == '__main__':
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
     # 2.3 Data initialization:
-
+    _, train_loader = data_loader(args, 'train')
 
 
 

@@ -26,7 +26,7 @@ class DataPEMS(Dataset):
 
         # Data split:
         train_ratio = 1 - self.args.valid_ratio - self.args.test_ratio
-        if train_ratio > 0 or train_ratio < 1:
+        if train_ratio < 0 or train_ratio > 1:
             raise ValueError('Invalid ratio settings. The sum of train, valid and test ratio must be 1')
 
         train_end = int(train_ratio * data.shape[0])
