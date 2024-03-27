@@ -18,3 +18,12 @@
 - iTransformer: 
   - Paper: https://arxiv.org/abs/2310.06625 (ICLR 2024 A)
   - Code:  https://github.com/thuml/iTransformer
+
+
+
+
+# 框架细节：
+## utils:
+### dataProvider
+
+- init():

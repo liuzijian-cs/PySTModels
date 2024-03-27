@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import os
 
+# 纯傻逼，每次都要重复读数据，内存里放了一堆没用的东西
 
 class DataPEMS(Dataset):
     def __init__(self, args, data_type, scale=True, scaler=None):
@@ -52,11 +53,11 @@ class DataPEMS(Dataset):
         seq_x = self.data[index: index + self.args.seq_len]
         seq_y = self.data[
             index + self.args.seq_len - self.args.label_len, index + self.args.seq_len + self.args.pred_len]
-        # TODO
+        # No mask is required for the PEMS dataset
         #         seq_x_mark = torch.zeros((seq_x.shape[0], 1))
         #         seq_y_mark = torch.zeros((seq_x.shape[0], 1))
         #         return seq_x, seq_y, seq_x_mark, seq_y_mark
-        return seq_x, seq_y
+        return seq_x, seq_y, None, None
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
