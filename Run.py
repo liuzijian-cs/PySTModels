@@ -3,9 +3,8 @@ import torch
 import numpy as np
 import os
 
-
 from utils.dataProviders import PEMS
-from utils.taskMaker import TimeSeriesForcast
+from utils.taskMaker import TimeSeriesForecast
 from model import iTransformer
 
 data_dict = {
@@ -13,15 +12,14 @@ data_dict = {
 }
 
 model_dict = {
-    'iTransformer': iTransformer
+    'iTransformer': iTransformer,
 }
 
 task_dict = {
-    'TimeSeriesForcast': TimeSeriesForcast
+    'TimeSeriesForecast': TimeSeriesForecast,
 }
 
 if __name__ == '__main__':
-
     # 1. Parser
     parser = argparse.ArgumentParser()  # Create the argument parser
 
@@ -38,6 +36,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--model', type=str, default='iTransformer',
                         help='model list: [iTransformer]')
+    parser.add_argument('--task', type=str, default='TimeSeriesForecast',
+                        help='task list:[Task]')
     parser.add_argument('--seed', type=int, default=None, help='random seed')
 
     # 1.2 Data arguments:
@@ -74,22 +74,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # 2. Initialization:
-
-    # 2.1 Device initialization:
-    if args.device == 'cuda':
-        if not torch.cuda.is_available():
-            raise RuntimeError(f'cuda is not available! (args.device == {args.deivce})')
-    # 2.2 Seed initialization:
-    if args.seed is not None:
-        np.random.seed(args.seed)
-        torch.manual_seed(args.seed)
-        if args.device == 'cuda' and torch.cuda.is_available():
-            torch.cuda.init()
-            torch.cuda.manual_seed_all(args.seed)
-            torch.backends.cudnn.deterministic = True
-            torch.backends.cudnn.benchmark = False
     # 2.3 Path existence checking # TODO
     # if not os.path.exists(args.save_dir):
 
-    # 2.3 Data initialization:
-    _, train_loader = data_loader(args, 'train')
+    Task = task_dict[args.task].Task(args, model_dict, data_dict)
