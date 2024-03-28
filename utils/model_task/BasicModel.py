@@ -1,4 +1,4 @@
-from utils.data_function import data_loader
+
 
 
 class BasicModel(object):

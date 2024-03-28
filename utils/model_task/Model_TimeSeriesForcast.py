@@ -6,9 +6,9 @@ import time
 from utils.model_task.BasicModel import BasicModel
 
 
-class TimeSeriesForcast(BasicModel):
+class TimeSeriesForcast():
     def __init__(self, args, model_dict):
-        super(TimeSeriesForcast, self).__init__(args, model_dict)
+        None
 
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args)

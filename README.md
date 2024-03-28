@@ -7,7 +7,8 @@
 |- data      : 存放数据集
 |- model     : 模型目录
 |- utils     : 功能函数
-  |- dataset_conf       : 数据集读取逻辑
+  |- dataProvider       : 数据集读取逻辑(BasicDataProvider作为基类实现任意数据集读取策略)
+    > api: transform()、inverse_transform()
   |- base_function.py   : 基本功能函数
   |- data_function.py   : 数据相关接口函数
 |- Run.py    : 接口函数（用于调用其他函数）
@@ -27,3 +28,10 @@
 ### dataProvider
 
 - init():
+
+
+
+# 测试list
+- 多GPU
+- linux
+- wsl windows

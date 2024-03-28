@@ -1,11 +1,6 @@
-import argparse
-import torch
-import numpy as np
-import os
-
-
+from utils.taskMaker.TimeSeriesForcast import TimeSeriesForcast
 from utils.dataProviders import PEMS
-from utils.taskMaker import TimeSeriesForcast
+from utils.base_function import print_log, Color
 from model import iTransformer
 
 data_dict = {
@@ -21,30 +16,29 @@ task_dict = {
 }
 
 if __name__ == '__main__':
+    import argparse
 
     # 1. Parser
     parser = argparse.ArgumentParser()  # Create the argument parser
 
     # 1.1 Basic config:
-    # 1.1.1 Device config
     parser.add_argument('--device', type=str, default='cuda', help='cuda or cpu')
     parser.add_argument('--gpu_id', type=str, default="0", help='GPU device id (single gpu)')
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
-    parser.add_argument('--num_workers', type=int, default=16, help='number of CPU workers')
-    # 1.2.1 Base path config
-    parser.add_argument('--model_save_path', type=str, default='./model_save')
-    parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
 
+    parser.add_argument('--num_workers', type=int, default=16, help='number of data loading workers')
     parser.add_argument('--model', type=str, default='iTransformer',
                         help='model list: [iTransformer]')
     parser.add_argument('--seed', type=int, default=None, help='random seed')
+    parser.add_argument('--model_save_path', type=str, default='../model_save')
+    parser.add_argument('--log_file', type=str, default='../model_save/logs/logs.txt')
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
     parser.add_argument('--data', type=str, default='PEMS',
                         help='data list: [PEMS], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path', type=str, default='./data/PEMS/PEMS04.npz')
+    parser.add_argument('--data_path', type=str, default='../data/PEMS/PEMS04.npz')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',
@@ -73,23 +67,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # 2. Initialization:
-
-    # 2.1 Device initialization:
-    if args.device == 'cuda':
-        if not torch.cuda.is_available():
-            raise RuntimeError(f'cuda is not available! (args.device == {args.deivce})')
-    # 2.2 Seed initialization:
-    if args.seed is not None:
-        np.random.seed(args.seed)
-        torch.manual_seed(args.seed)
-        if args.device == 'cuda' and torch.cuda.is_available():
-            torch.cuda.init()
-            torch.cuda.manual_seed_all(args.seed)
-            torch.backends.cudnn.deterministic = True
-            torch.backends.cudnn.benchmark = False
-    # 2.3 Path existence checking # TODO
-    # if not os.path.exists(args.save_dir):
-
-    # 2.3 Data initialization:
-    _, train_loader = data_loader(args, 'train')
+    print_log(args, 'task_function.py   :testing...')
+    Task = TimeSeriesForcast(args, model_dict, data_dict)
