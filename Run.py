@@ -66,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--amp', type=bool, default='True', help='Automatic Mixed Precision')
+    parser.add_argument('--shuffle', type=bool, default=True, help='shuffle data')
 
     # 1.2
     # 1.2 Model:

@@ -12,7 +12,7 @@ class DataProvider(BasicDataProvider):
     def _load_data(self):
         return np.load(os.path.join(self.args.data_path), allow_pickle=True)['data'][:, :, 0]  # traffic flow
 
-    def _prepare_data(self):
+    def _split_data(self):
         """
         Split the dataset strictly in time order
         """
@@ -24,6 +24,9 @@ class DataProvider(BasicDataProvider):
         valid_end = train_end + int(self.args.valid_ratio * self.data.shape[0])
         return self.data[:train_end], self.data[train_end:valid_end], self.data[valid_end:], self.data[:valid_end]
 
+    def train_loader(self):
+        x_train, y_train = self._prepare_data_timeseries("train")
+
     def transform(self, data, data_type="train-valid"):
         super().transform(data, data_type)
 
@@ -33,4 +36,16 @@ class DataProvider(BasicDataProvider):
     def __len__(self):
         return len(self.data) - self.args.seq_len - self.args.pred_len + 1
 
-
+    def _prepare_data(self, data_type):
+        """
+        :args: seq_len, pred_len
+        :return:
+        """
+        assert data_type in ['train', 'valid', 'test', "train-valid", "all"]
+        end_index = len(self.dataset_dict[data_type]) - self.args.seq_len - self.args.pred_len + 1
+        x = np.zeros((end_index, self.args.seq_len, self.dataset_dict[data_type].shape[-1]))
+        y = np.zeros((end_index, self.args.pred_len, self.dataset_dict[data_type].shape[-1]))
+        for i in range(end_index):
+            x[i] = self.dataset_dict[data_type][i:i + self.args.seq_len]
+            y[i] = self.dataset_dict[data_type][i + self.args.seq_len: i + self.args.seq_len + self.args.pred_len]
+        return x, y

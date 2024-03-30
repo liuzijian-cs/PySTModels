@@ -5,7 +5,6 @@ import time
 
 from utils.model_task.BasicModel import BasicModel
 
-
 class TimeSeriesForcast():
     def __init__(self, args, model_dict):
         None
@@ -49,3 +48,12 @@ class TimeSeriesForcast():
                     y_batch_mask = y_batch_mask.float().to(self.args.device)
 
 
+# if self.args.features == "M":  # Multivariate predicts multivariate.
+    #     None
+    # elif self.args.features == "MS":
+    #     return None  # TODO
+    # elif self.args.features == "S":
+    #     return None  # TODO
+    # else:
+    #     raise RuntimeError(
+    #         f'{Color.R}PEMS.py! : RuntimeError, There is no matching features value, make sure the --features parameter is in {Color.B}[M,MS,S]{Color.R}{Color.RE}')
