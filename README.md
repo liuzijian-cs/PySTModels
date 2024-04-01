@@ -35,3 +35,7 @@
 - 多GPU
 - linux
 - wsl windows
+
+
+# TODO LIST:
+1. 数据在内存中被复制为了5份（all、train、valid、test、train-valid），约数据集大小的三倍使用量，后续工作应平衡读取速度和内存使用。

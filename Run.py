@@ -3,10 +3,13 @@ import torch
 import numpy as np
 import os
 
+# Data Providers:
 from utils.dataProviders import PEMS
+# Task Makers:
 from utils.taskMaker import TimeSeriesForecast
-from model import iTransformer
-
+# Models:
+from model.iTransformer import iTransformer
+# Global dictionary:
 data_dict = {
     'PEMS': PEMS,
 }
@@ -19,6 +22,7 @@ task_dict = {
     'TimeSeriesForecast': TimeSeriesForecast,
 }
 
+# Main:
 if __name__ == '__main__':
     # 1. Parser
     parser = argparse.ArgumentParser()  # Create the argument parser
@@ -50,8 +54,8 @@ if __name__ == '__main__':
     parser.add_argument('--features', type=str, default='M',
                         help='features list: [M, S, MS], ''M: mul predict mul, S: uni pred uni , MS: mul pred uni')
     parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
-    # train (X):|--------------- seq_len ---------------|
-    # label (Y):                        |---label_len---|--pred_len--|
+    # encoder: |--------------- seq_len ---------------|
+    # decoder: :                        |---label_len---|--pred_len--|
     parser.add_argument('--seq_len', type=int, default=96, help='Look back up sequence length')
     parser.add_argument('--label_len', type=int, default=48, help='options')
     parser.add_argument('--pred_len', type=int, default=12, help='predict sequence length')
@@ -67,15 +71,32 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--amp', type=bool, default='True', help='Automatic Mixed Precision')
     parser.add_argument('--shuffle', type=bool, default=True, help='shuffle data')
+    parser.add_argument('--scale', type=bool, default=True, help='Whether to normalize the original data')
+    parser.add_argument('--scaler', type=str, default=None, help='Specify the scaler,None = std scaler')  # TODO
+    parser.add_argument('--d_model', type=int, default=1024, help='Dimensionality of the model')  # TODO
+    parser.add_argument('--d_ffn', type=int, default=1024, help='Dimensionality of the FFN')
+    parser.add_argument('--enc_layers', type=int, default=4, help='Number of encoder layers')
+    parser.add_argument('--dec_layers',type=int, default=4, help='Number of decoder layers')
+    # 1.2.1 Attention
+    parser.add_argument('--n_heads', type=int, default=8, help='number of attention heads')
+    parser.add_argument('--attn_dropout', type=float, default=0.1, help='dropout in attention modules')
+
+    parser.add_argument('--channel_independence', type=bool, default=False, help='channel_independence')
+    # Ablation experiment
+    parser.add_argument('--output_attention', type=bool, default=False, help='return the attention matrix')
 
     # 1.2
     # 1.2 Model:
     # Common Parameter:
 
     args = parser.parse_args()
+    logfile = open(args.log_file, "w")
 
     # 2. Initialization:
     # 2.3 Path existence checking # TODO
     # if not os.path.exists(args.save_dir):
 
     Task = task_dict[args.task].Task(args, model_dict, data_dict)
+
+    # TODO LIST:
+    #

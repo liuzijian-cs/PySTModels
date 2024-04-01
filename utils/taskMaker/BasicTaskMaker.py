@@ -14,16 +14,18 @@ class BasicTask:
         self.device = self._prepare_device_seed()
         t2 = time.time()
         print_log(self.args,
-                  f"{Color.P}TaskMaker(init)    ({(t2 - t1):6.2f}s):{Color.RE} Deivce and seed initialization is complete, using device: {Color.B}{self.device}{Color.RE}, using seed: {Color.B}{self.args.seed}{Color.RE} ")
+                  f"{Color.P}TaskMaker[init]    ({(t2 - t1):6.2f}s):{Color.RE} Deivce and seed initialization is complete, using device: {Color.B}{self.device}{Color.RE}, using seed: {Color.B}{self.args.seed}{Color.RE} ")
 
         # self.model = self._prepare_model().to(self.device)
         t3 = time.time()
         print_log(self.args,
-                  f"{Color.P}TaskMaker(init)    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete.")
-        self.DataProvider = self.data_dict[self.args.data].DataProvider(args)
+                  f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete.")
+        self.DataProvider = self.data_dict[self.args.data].DataProvider(
+            self.args, self.args.scale, self.args.scaler,self.device)
         t4 = time.time()
         print_log(self.args,
-                  f"{Color.P}TaskMaker(init)    ({(t4 - t3):6.2f}s):{Color.RE} Created DataProvider: {Color.B}{self.data_dict[self.args.data]}")
+                  f"{Color.P}TaskMaker[init]    ({(t4 - t3):6.2f}s):{Color.RE} Created DataProvider: {Color.B}{self.data_dict[self.args.data]}")
+        self.train_loader = self.DataProvider.train_loader()
 
     def _prepare_device_seed(self):
         """
@@ -40,7 +42,6 @@ class BasicTask:
             device = torch.device(f'cuda:{self.args.gpu_id}')
         else:
             device = torch.device('cpu')
-
         # Seed initialization:
         if self.args.seed is not None:
             np.random.seed(self.args.seed)

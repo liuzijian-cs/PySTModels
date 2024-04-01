@@ -6,8 +6,8 @@ import os
 
 
 class DataProvider(BasicDataProvider):
-    def __init__(self, args, scale=True, scaler=None):
-        super(DataProvider, self).__init__(args, scale, scaler)
+    def __init__(self, args, scale=True, scaler=None, device=None):
+        super(DataProvider, self).__init__(args, scale, scaler, device)
 
     def _load_data(self):
         return np.load(os.path.join(self.args.data_path), allow_pickle=True)['data'][:, :, 0]  # traffic flow
@@ -25,7 +25,7 @@ class DataProvider(BasicDataProvider):
         return self.data[:train_end], self.data[train_end:valid_end], self.data[valid_end:], self.data[:valid_end]
 
     def train_loader(self):
-        x_train, y_train = self._prepare_data_timeseries("train")
+        super().train_loader()
 
     def transform(self, data, data_type="train-valid"):
         super().transform(data, data_type)
@@ -43,9 +43,15 @@ class DataProvider(BasicDataProvider):
         """
         assert data_type in ['train', 'valid', 'test', "train-valid", "all"]
         end_index = len(self.dataset_dict[data_type]) - self.args.seq_len - self.args.pred_len + 1
-        x = np.zeros((end_index, self.args.seq_len, self.dataset_dict[data_type].shape[-1]))
-        y = np.zeros((end_index, self.args.pred_len, self.dataset_dict[data_type].shape[-1]))
+        x_shape = (end_index, self.args.seq_len, self.dataset_dict[data_type].shape[-1])
+        y_shape = (end_index, self.args.pred_len, self.dataset_dict[data_type].shape[-1])
+        # Preallocate memory
+        x = torch.zeros(x_shape, dtype=torch.float, device=self.device)
+        y = torch.zeros(y_shape, dtype=torch.float, device=self.device)
         for i in range(end_index):
-            x[i] = self.dataset_dict[data_type][i:i + self.args.seq_len]
-            y[i] = self.dataset_dict[data_type][i + self.args.seq_len: i + self.args.seq_len + self.args.pred_len]
+            x[i] = torch.tensor(self.dataset_dict[data_type][i:i + self.args.seq_len], device=self.device)
+            y[i] = torch.tensor(
+                self.dataset_dict[data_type][i + self.args.seq_len: i + self.args.seq_len + self.args.pred_len],
+                device=self.device)
         return x, y
+

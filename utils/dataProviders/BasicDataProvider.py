@@ -7,17 +7,19 @@ import time
 
 
 class BasicDataProvider(Dataset):
-    def __init__(self, args, scale=True, scaler=None):
+    def __init__(self, args, scale=True, scaler=None, device=None):
         super(BasicDataProvider, self).__init__()
+        # 1. variable initialization
         t1 = time.time()
         self.args = args
-
-        self.data = self._load_data()  # load data to memory
+        self.device = device
+        # 2. load data
         t2 = time.time()
+        self.data = self._load_data()
         print_log(self.args,
-                  f"{Color.P}DataProvider(init) ({(t2 - t1):6.2f}s):{Color.RE} load dataset {Color.B}{self.args.data}{Color.RE}, shape: {Color.C}{self.data.shape}{Color.RE}, max = {self.data.max()}, min = {self.data.min()}, mean = {self.data.mean()}, median = {np.median(self.data)}")
-
-        self.data_train, self.data_valid, self.data_test, self.data_train_valid = self._prepare_data()
+                  f"{Color.P}DataProvider[init] ({(t2 - t1):6.2f}s):{Color.RE} load dataset {Color.B}{self.args.data}{Color.RE}, shape: {Color.C}{self.data.shape}{Color.RE}, max = {self.data.max()}, min = {self.data.min()}, mean = {self.data.mean()}, median = {np.median(self.data)}")
+        # 3. split data
+        self.data_train, self.data_valid, self.data_test, self.data_train_valid = self._split_data()
         self.dataset_dict = {
             "train": self.data_train,
             "valid": self.data_valid,
@@ -27,8 +29,8 @@ class BasicDataProvider(Dataset):
         }
         t3 = time.time()
         print_log(self.args,
-                  f"{Color.P}DataProvider(init) ({(t3 - t2):6.2f}s):{Color.RE} Train:{Color.C}{self.data_train.shape}{Color.RE}, Valid:{Color.C}{self.data_valid.shape}{Color.RE}, Test:{Color.C}{self.data_test.shape}{Color.RE}")
-
+                  f"{Color.P}DataProvider[init] ({(t3 - t2):6.2f}s):{Color.RE} Train:{Color.C}{self.data_train.shape}{Color.RE}, Valid:{Color.C}{self.data_valid.shape}{Color.RE}, Test:{Color.C}{self.data_test.shape}{Color.RE}")
+        # 4. scaler initialization
         self.scale = scale
         self.scaler = (scaler if scaler is not None else StandardScaler()).fit(self.data_train_valid)
         self.scaler_train = (scaler if scaler is not None else StandardScaler()).fit(self.data_train)
@@ -42,13 +44,13 @@ class BasicDataProvider(Dataset):
             "train-valid": self.scaler,  # Default
             "all": self.scaler_all
         }
-
+        # 5. scale data
         if scale is True:
             self.data_train = self.transform(self.data_train, "train")
             self.data_valid = self.transform(self.data_valid, "valid")
             self.data_test = self.transform(self.data_test, "test")
             print_log(self.args,
-                      f"{Color.P}DataProvider(init) ({(time.time() - t3):6.2f}s):{Color.RE} Data normalization is complete, using {Color.B}{self.scaler}{Color.RE}. ")
+                      f"{Color.P}DataProvider[init] ({(time.time() - t3):6.2f}s):{Color.RE} Data normalization is complete, using {Color.B}{self.scaler}{Color.RE}. ")
 
     def __len__(self):
         return len(self.data)
@@ -79,14 +81,15 @@ class BasicDataProvider(Dataset):
 
     def train_loader(self):
         t1 = time.time()
-        train_x, train_y = self._prepare_data("train")
+        x, y = self._prepare_data("train")
+        t2 = time.time()
         print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} Train data preparation is complete, train_x: {Color.C}{len(train_x)}{Color.RE}, train_y: {Color.C}{len(train_y)}{Color.RE}")
-        data = torch.utils.data.TensorDataset(train_x, train_y)
+                  f"{Color.P}DataProvider[prep] ({(t2 - t1):6.2f}s):{Color.RE} Train data preparation is complete, train_x: {Color.C}{x.shape}{Color.RE}, train_y: {Color.C}{y.shape}{Color.RE}")
+        data = torch.utils.data.TensorDataset(x, y)
         dataloader = torch.utils.data.DataLoader(
-            data, batch_size=self.args.batch_size, shuffle=self.args.shufflem, num_workers=self.args.num_workers)
+            data, batch_size=self.args.batch_size, shuffle=self.args.shuffle, num_workers=self.args.num_workers)
         print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} Train dataloader preparation is complete, Trainloader: size {Color.C}{len(dataloader)}{Color.RE} in {Color.B}{dataloader}{Color}")
+                  f"{Color.P}DataProvider[prep] ({(time.time() - t2):6.2f}s):{Color.RE} Train dataloader preparation is complete, steps: {Color.C}{len(dataloader)}{Color.RE}, batch_size: {Color.B}{self.args.batch_size}{Color.RE}, shuffle: {Color.B}{self.args.shuffle}{Color.RE}, num_workers: {Color.B}{self.args.num_workers}{Color.RE} ")
         return dataloader
 
     def valid_loader(self):
