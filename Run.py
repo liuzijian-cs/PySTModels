@@ -4,14 +4,16 @@ import numpy as np
 import os
 
 # Data Providers:
-from utils.dataProviders import PEMS
+from utils.dataProviders import PEMS, SST
 # Task Makers:
 from utils.taskMaker import TimeSeriesForecast
 # Models:
 from model.iTransformer import iTransformer
+
 # Global dictionary:
 data_dict = {
     'PEMS': PEMS,
+    'SST': SST,
 }
 
 model_dict = {
@@ -29,7 +31,7 @@ if __name__ == '__main__':
 
     # 1.1 Basic config:
     # 1.1.1 Device config
-    parser.add_argument('--device', type=str, default='cuda', help='cuda or cpu')
+    parser.add_argument('--device', type=str, default='cpu', help='cuda or cpu')
     parser.add_argument('--gpu_id', type=str, default="0", help='GPU device id (single gpu)')
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
@@ -46,9 +48,9 @@ if __name__ == '__main__':
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
-    parser.add_argument('--data', type=str, default='PEMS',
-                        help='data list: [PEMS], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path', type=str, default='./data/PEMS/PEMS04.npz')
+    parser.add_argument('--data', type=str, default='SST',
+                        help='data list: [PEMS, SST], new dataset pls conf in utils/dataset_conf')
+    parser.add_argument('--data_path', type=str, default='./data/SST/Nan_Hai.csv')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',
@@ -66,7 +68,7 @@ if __name__ == '__main__':
 
     # 1.2 Model arguments:
     parser.add_argument('--epochs', type=int, default=10, help='number of train epochs')
-    parser.add_argument('--batch_size', type=int, default=32, help='Based on the size of the GPU memory')
+    parser.add_argument('--batch_size', type=int, default=4, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--amp', type=bool, default=True, help='Automatic Mixed Precision')
@@ -76,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--d_model', type=int, default=1024, help='Dimensionality of the model')  # TODO
     parser.add_argument('--d_ff', type=int, default=1024, help='Dimensionality of the FFN')
     parser.add_argument('--enc_layers', type=int, default=4, help='Number of encoder layers')
-    parser.add_argument('--dec_layers',type=int, default=4, help='Number of decoder layers')
+    parser.add_argument('--dec_layers', type=int, default=4, help='Number of decoder layers')
     # 1.2.1 Attention
     parser.add_argument('--n_heads', type=int, default=8, help='number of attention heads')
     parser.add_argument('--attn_dropout', type=float, default=0.1, help='dropout in attention modules')
@@ -86,8 +88,6 @@ if __name__ == '__main__':
     parser.add_argument('--output_attention', type=bool, default=False, help='return the attention matrix')
 
     # TimeSeries:
-
-
 
     # 1.2
     # 1.2 Model:
@@ -102,4 +102,3 @@ if __name__ == '__main__':
 
     Task = task_dict[args.task].Task(args, model_dict, data_dict)
     Task.train()
-

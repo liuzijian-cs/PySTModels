@@ -11,6 +11,7 @@ class BasicTask:
         self.args = args
         self.model_dict = model_dict
         self.data_dict = data_dict
+        self.amp_scaler = None
         self.device = self._prepare_device_seed()
         t2 = time.time()
         print_log(self.args,
@@ -30,9 +31,7 @@ class BasicTask:
         self.test_loader = self.DataProvider.data_loader("test")
         print_log(self.args,
                   f"{Color.P}TaskMaker[init]    ({(time.time() - t4):6.2f}s):{Color.RE} Created dataloader! {Color.G}Train: {len(self.train_loader)}{Color.RE}, {Color.Y}Valid: {len(self.valid_loader)}{Color.RE}, {Color.R}Test: {len(self.test_loader)}{Color.RE}. {Color.P}TaskMaker initialization is complete, time cost: ({(time.time() - t1):6.2f}s):{Color.RE}.")
-        # AMP - Automatic Mixed Precision : High training speed and reduced memory required by the model
-        if self.args.amp:
-            self.amp_scaler = torch.cuda.amp.GradScaler()
+
         # Needs to be implemented in subclass:
         self.model_optimizer = None
         self.model_criterion = None
@@ -63,6 +62,9 @@ class BasicTask:
                 torch.cuda.manual_seed_all(self.args.seed)
                 torch.backends.cudnn.deterministic = True
                 torch.backends.cudnn.benchmark = False
+        # AMP - Automatic Mixed Precision : High training speed and reduced memory required by the model
+        if self.args.amp and device == 'cuda':
+            self.amp_scaler = torch.cuda.amp.GradScaler()
         return device
 
     def _prepare_model(self):

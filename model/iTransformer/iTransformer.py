@@ -48,10 +48,11 @@ class Model(nn.Module):
 
     def forward(self, x, x_mask=None):  # Encoder-Only
         _, _, N = x.shape
-        x_embedded = self.inverted_embedding(x,x_mask)
+        x_embedded = self.inverted_embedding(x, x_mask)
         enc_out, attention_weight = self.encoder(x_embedded, x_mask)
         dec_out = self.projector(enc_out).transpose(2, 1)
         return dec_out, attention_weight
+
 
 if __name__ == '__main__':
     class Args:

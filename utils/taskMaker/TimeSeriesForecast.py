@@ -53,7 +53,23 @@ class Task(BasicTask):
         for epoch in range(self.args.epochs):
             self.model.train()
             for batch_idx, (batch_x, batch_y) in enumerate(self.train_loader):
-                print(batch_idx)
+                self.model_optimizer.zero_grad()
+                # Data to device
+                batch_x, batch_y = batch_x.to(self.device), batch_y.to(self.device)
+                if self.args.amp and self.device == 'cuda':
+                    with torch.cuda.amp.autocast():
+                        y_pred, attention_weight = self.model(batch_x)
+                else:
+                    y_pred, attention_weight = self.model(batch_x)
+                print(f"test: y_pred:{y_pred.shape}")
+                y_pred_transformed = self.DataProvider.inverse_transform(y_pred)
+                y_true_transformed = self.DataProvider.inverse_transform(batch_y)
+                print(f"test: y_pred_transformed:{y_pred_transformed.shape}")
+                print(f"test: y_true_transformed:{y_true_transformed.shape}")
+
+
+
+
 #
 #
 #

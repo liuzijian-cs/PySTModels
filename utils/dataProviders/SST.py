@@ -1,5 +1,5 @@
-from utils.base_function import print_log, Color
 from utils.dataProviders.BasicDataProvider import BasicDataProvider
+import pandas as pd
 import torch
 import numpy as np
 import os
@@ -10,7 +10,8 @@ class DataProvider(BasicDataProvider):
         super(DataProvider, self).__init__(args, scale, scaler, device)
 
     def _load_data(self):
-        return np.load(os.path.join(self.args.data_path), allow_pickle=True)['data'][:, :, 0]  # traffic flow
+        df = pd.read_csv(self.args.data_path, index_col=0)
+        return df.iloc[1:, :308].to_numpy()
 
     def _split_data(self):
         """
@@ -23,9 +24,6 @@ class DataProvider(BasicDataProvider):
         train_end = int(train_ratio * self.data.shape[0])
         valid_end = train_end + int(self.args.valid_ratio * self.data.shape[0])
         return self.data[:train_end], self.data[train_end:valid_end], self.data[valid_end:], self.data[:valid_end]
-
-    def __len__(self):
-        return len(self.data) - self.args.seq_len - self.args.pred_len + 1
 
     def _prepare_data(self, data_type):
         """
@@ -45,4 +43,3 @@ class DataProvider(BasicDataProvider):
                 self.dataset_dict[data_type][i + self.args.seq_len: i + self.args.seq_len + self.args.pred_len],
                 device=self.device)
         return x, y
-
