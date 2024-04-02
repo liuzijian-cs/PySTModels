@@ -16,7 +16,7 @@ class BasicTask:
         print_log(self.args,
                   f"{Color.P}TaskMaker[init]    ({(t2 - t1):6.2f}s):{Color.RE} Deivce and seed initialization is complete, using device: {Color.B}{self.device}{Color.RE}, using seed: {Color.B}{self.args.seed}{Color.RE} ")
 
-        # self.model = self._prepare_model().to(self.device)
+        self.model = self._prepare_model().to(self.device)
         t3 = time.time()
         print_log(self.args,
                   f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete.")
@@ -25,7 +25,19 @@ class BasicTask:
         t4 = time.time()
         print_log(self.args,
                   f"{Color.P}TaskMaker[init]    ({(t4 - t3):6.2f}s):{Color.RE} Created DataProvider: {Color.B}{self.data_dict[self.args.data]}")
-        self.train_loader = self.DataProvider.train_loader()
+        self.train_loader = self.DataProvider.data_loader("train")
+        self.valid_loader = self.DataProvider.data_loader("valid")
+        self.test_loader = self.DataProvider.data_loader("test")
+        print_log(self.args,
+                  f"{Color.P}TaskMaker[init]    ({(time.time() - t4):6.2f}s):{Color.RE} Created dataloader! {Color.G}Train: {len(self.train_loader)}{Color.RE}, {Color.Y}Valid: {len(self.valid_loader)}{Color.RE}, {Color.R}Test: {len(self.test_loader)}{Color.RE}. {Color.P}TaskMaker initialization is complete, time cost: ({(time.time() - t1):6.2f}s):{Color.RE}.")
+        # AMP - Automatic Mixed Precision : High training speed and reduced memory required by the model
+        if self.args.amp:
+            self.amp_scaler = torch.cuda.amp.GradScaler()
+        # Needs to be implemented in subclass:
+        self.model_optimizer = None
+        self.model_criterion = None
+
+
 
     def _prepare_device_seed(self):
         """
@@ -58,3 +70,14 @@ class BasicTask:
         if self.args.use_multi_gpu and self.args.device == 'cuda':
             model = torch.nn.DataParallel(model, device_ids=self.args.gpu_ids)
         return model
+
+    def train(self):
+        raise NotImplementedError
+
+    # def valid(self):
+    #     raise NotImplementedError
+    #
+    # def test(self):
+    #     raise NotImplementedError
+
+

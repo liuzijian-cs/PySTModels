@@ -79,41 +79,20 @@ class BasicDataProvider(Dataset):
         """
         raise NotImplementedError
 
-    def train_loader(self):
+    def data_loader(self, data_type):
+        assert data_type in ["train", "valid", "test"]
         t1 = time.time()
-        x, y = self._prepare_data("train")
-        t2 = time.time()
-        print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(t2 - t1):6.2f}s):{Color.RE} Train data preparation is complete, train_x: {Color.C}{x.shape}{Color.RE}, train_y: {Color.C}{y.shape}{Color.RE}")
+        x, y = self._prepare_data(data_type)
         data = torch.utils.data.TensorDataset(x, y)
         dataloader = torch.utils.data.DataLoader(
             data, batch_size=self.args.batch_size, shuffle=self.args.shuffle, num_workers=self.args.num_workers)
+        name_dict ={
+            "train": f"{Color.G}Train data{Color.RE}",
+            "valid": f"{Color.Y}Valid data{Color.RE}",
+            "test": f"{Color.R}Test data{Color.RE}"
+        }
         print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t2):6.2f}s):{Color.RE} Train dataloader preparation is complete, steps: {Color.C}{len(dataloader)}{Color.RE}, batch_size: {Color.B}{self.args.batch_size}{Color.RE}, shuffle: {Color.B}{self.args.shuffle}{Color.RE}, num_workers: {Color.B}{self.args.num_workers}{Color.RE} ")
-        return dataloader
-
-    def valid_loader(self):
-        t1 = time.time()
-        train_x, train_y = self._prepare_data("valid")
-        print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} Valid data preparation is complete, valid_x: {Color.C}{len(train_x)}{Color.RE}, valid_y: {Color.C}{len(train_y)}{Color.RE}")
-        data = torch.utils.data.TensorDataset(train_x, train_y)
-        dataloader = torch.utils.data.DataLoader(
-            data, batch_size=self.args.batch_size, shuffle=self.args.shufflem, num_workers=self.args.num_workers)
-        print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} Valid dataloader preparation is complete, Validloader: size {Color.C}{len(dataloader)}{Color.RE} in {Color.B}{dataloader}{Color}")
-        return dataloader
-
-    def test_loader(self):
-        t1 = time.time()
-        test_x, test_y = self._prepare_data("test")
-        print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} Test data preparation is complete, test_x: {Color.C}{len(test_x)}{Color.RE}, test_y: {Color.C}{len(test_y)}{Color.RE}")
-        data = torch.utils.data.TensorDataset(test_x, test_y)
-        dataloader = torch.utils.data.DataLoader(
-            data, batch_size=self.args.batch_size, shuffle=self.args.shufflem, num_workers=self.args.num_workers)
-        print_log(self.args,
-                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} Test dataloader preparation is complete, Testloader: size {Color.C}{len(dataloader)}{Color.RE} in {Color.B}{dataloader}{Color}")
+                  f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} {name_dict[data_type]} : x: {Color.C}{x.shape}{Color.RE}, y: {Color.C}{y.shape}{Color.RE}, steps: {Color.C}{len(dataloader)}{Color.RE}, batch_size: {Color.B}{self.args.batch_size}{Color.RE}, shuffle: {Color.B}{self.args.shuffle}{Color.RE}, num_workers: {Color.B}{self.args.num_workers}{Color.RE}")
         return dataloader
 
     def transform(self, data, data_type="train-valid"):

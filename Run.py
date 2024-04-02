@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu_id', type=str, default="0", help='GPU device id (single gpu)')
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
-    parser.add_argument('--num_workers', type=int, default=16, help='number of CPU workers')
+    parser.add_argument('--num_workers', type=int, default=8, help='number of CPU workers')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
@@ -69,12 +69,12 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
-    parser.add_argument('--amp', type=bool, default='True', help='Automatic Mixed Precision')
+    parser.add_argument('--amp', type=bool, default=True, help='Automatic Mixed Precision')
     parser.add_argument('--shuffle', type=bool, default=True, help='shuffle data')
     parser.add_argument('--scale', type=bool, default=True, help='Whether to normalize the original data')
     parser.add_argument('--scaler', type=str, default=None, help='Specify the scaler,None = std scaler')  # TODO
     parser.add_argument('--d_model', type=int, default=1024, help='Dimensionality of the model')  # TODO
-    parser.add_argument('--d_ffn', type=int, default=1024, help='Dimensionality of the FFN')
+    parser.add_argument('--d_ff', type=int, default=1024, help='Dimensionality of the FFN')
     parser.add_argument('--enc_layers', type=int, default=4, help='Number of encoder layers')
     parser.add_argument('--dec_layers',type=int, default=4, help='Number of decoder layers')
     # 1.2.1 Attention
@@ -84,6 +84,10 @@ if __name__ == '__main__':
     parser.add_argument('--channel_independence', type=bool, default=False, help='channel_independence')
     # Ablation experiment
     parser.add_argument('--output_attention', type=bool, default=False, help='return the attention matrix')
+
+    # TimeSeries:
+
+
 
     # 1.2
     # 1.2 Model:
@@ -97,6 +101,5 @@ if __name__ == '__main__':
     # if not os.path.exists(args.save_dir):
 
     Task = task_dict[args.task].Task(args, model_dict, data_dict)
+    Task.train()
 
-    # TODO LIST:
-    #
