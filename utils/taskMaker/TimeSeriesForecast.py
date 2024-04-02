@@ -60,8 +60,8 @@ class Task(BasicTask):
                     with torch.cuda.amp.autocast():
                         y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
                         if self.args.data_inverse_scale:
-                            y_pred = torch.tensor(self.DataProvider.inverse_transform(y_pred)).to(self.device)
-                            y_true = torch.tensor(self.DataProvider.inverse_transform(y_true)).to(self.device)
+                            y_pred_inverse = torch.tensor(self.DataProvider.inverse_transform(y_pred)).to(self.device)
+                            y_true_inverse = torch.tensor(self.DataProvider.inverse_transform(y_true)).to(self.device)
                         loss = self.model_criterion(y_pred, y_true)
                         loss_item = loss.item()
                         mae = self._mae(y_pred, y_true)
