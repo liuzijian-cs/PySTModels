@@ -20,7 +20,7 @@ class BasicTask:
         self.model = self._prepare_model().to(self.device)
         t3 = time.time()
         print_log(self.args,
-                  f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete.")
+                  f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete, Number of parameters: {Color.C}{sum([p.nelement() for p in self.model.parameters()])}{Color.RE}")
         self.DataProvider = self.data_dict[self.args.data].DataProvider(
             self.args, self.args.scale, self.args.scaler,self.device)
         t4 = time.time()

@@ -88,6 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_attention', type=bool, default=False, help='return the attention matrix')
 
     # TimeSeries:
+    parser.add_argument("--data_inverse_scale", type=bool, default=True, help='inverse')  # TODO
 
     # 1.2
     # 1.2 Model:
