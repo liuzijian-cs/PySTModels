@@ -22,21 +22,14 @@ class BasicTask:
         print_log(self.args,
                   f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete, Number of parameters: {Color.C}{sum([p.nelement() for p in self.model.parameters()])}{Color.RE}")
         self.DataProvider = self.data_dict[self.args.data].DataProvider(
-            self.args, self.args.scale, self.args.scaler,self.device)
+            self.args, self.args.scale, self.args.scaler, self.device)
         t4 = time.time()
         print_log(self.args,
                   f"{Color.P}TaskMaker[init]    ({(t4 - t3):6.2f}s):{Color.RE} Created DataProvider: {Color.B}{self.data_dict[self.args.data]}")
-        self.train_loader = self.DataProvider.data_loader("train")
-        self.valid_loader = self.DataProvider.data_loader("valid")
-        self.test_loader = self.DataProvider.data_loader("test")
-        print_log(self.args,
-                  f"{Color.P}TaskMaker[init]    ({(time.time() - t4):6.2f}s):{Color.RE} Created dataloader! {Color.G}Train: {len(self.train_loader)}{Color.RE}, {Color.Y}Valid: {len(self.valid_loader)}{Color.RE}, {Color.R}Test: {len(self.test_loader)}{Color.RE}. {Color.P}TaskMaker initialization is complete, time cost: ({(time.time() - t1):6.2f}s):{Color.RE}.")
 
         # Needs to be implemented in subclass:
         self.model_optimizer = None
         self.model_criterion = None
-
-
 
     def _prepare_device_seed(self):
         """
@@ -63,7 +56,7 @@ class BasicTask:
                 torch.backends.cudnn.deterministic = True
                 torch.backends.cudnn.benchmark = False
         # AMP - Automatic Mixed Precision : High training speed and reduced memory required by the model
-        if self.args.amp and device == 'cuda':
+        if self.args.amp and self.args.device == "cuda":
             self.amp_scaler = torch.cuda.amp.GradScaler()
         return device
 
@@ -81,5 +74,3 @@ class BasicTask:
     #
     # def test(self):
     #     raise NotImplementedError
-
-

@@ -9,6 +9,7 @@ from utils.dataProviders import PEMS, SST
 from utils.taskMaker import TimeSeriesForecast
 # Models:
 from model.iTransformer import iTransformer
+from model.iTransformer_official import iTransformer_official
 
 # Global dictionary:
 data_dict = {
@@ -18,6 +19,7 @@ data_dict = {
 
 model_dict = {
     'iTransformer': iTransformer,
+    'iTransformer_official': iTransformer_official
 }
 
 task_dict = {
@@ -31,26 +33,26 @@ if __name__ == '__main__':
 
     # 1.1 Basic config:
     # 1.1.1 Device config
-    parser.add_argument('--device', type=str, default='cpu', help='cuda or cpu')
+    parser.add_argument('--device', type=str, default='cuda', help='cuda or cpu')
     parser.add_argument('--gpu_id', type=str, default="0", help='GPU device id (single gpu)')
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
-    parser.add_argument('--num_workers', type=int, default=8, help='number of CPU workers')
+    parser.add_argument('--num_workers', type=int, default=1, help='number of CPU workers')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
 
     parser.add_argument('--model', type=str, default='iTransformer',
-                        help='model list: [iTransformer]')
+                        help='model list: [iTransformer, iTransformer_official]')
     parser.add_argument('--task', type=str, default='TimeSeriesForecast',
                         help='task list:[Task]')
     parser.add_argument('--seed', type=int, default=None, help='random seed')
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
-    parser.add_argument('--data', type=str, default='SST',
+    parser.add_argument('--data', type=str, default='PEMS',
                         help='data list: [PEMS, SST], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path', type=str, default='./data/SST/Nan_Hai.csv')
+    parser.add_argument('--data_path', type=str, default='./data/PEMS/PEMS04.npz')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',
@@ -68,10 +70,10 @@ if __name__ == '__main__':
 
     # 1.2 Model arguments:
     parser.add_argument('--epochs', type=int, default=10, help='number of train epochs')
-    parser.add_argument('--batch_size', type=int, default=4, help='Based on the size of the GPU memory')
+    parser.add_argument('--batch_size', type=int, default=64, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
-    parser.add_argument('--amp', type=bool, default=True, help='Automatic Mixed Precision')
+    parser.add_argument('--amp', type=bool, default=False, help='Automatic Mixed Precision')
     parser.add_argument('--shuffle', type=bool, default=True, help='shuffle data')
     parser.add_argument('--scale', type=bool, default=True, help='Whether to normalize the original data')
     parser.add_argument('--scaler', type=str, default=None, help='Specify the scaler,None = std scaler')  # TODO

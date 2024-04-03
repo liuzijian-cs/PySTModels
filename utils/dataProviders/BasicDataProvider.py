@@ -126,8 +126,8 @@ class BasicDataProvider(Dataset):
         if isinstance(data, torch.Tensor):
             data = data.detach().cpu().numpy()
         data_reshaped = data.reshape(-1, data.shape[-1])
-        restored_data = self.data_type_dict[data_type].transform(data_reshaped)
-        return restored_data.reshape(original_shape)
+        restored_data = self.data_type_dict[data_type].inverse_transform(data_reshaped).reshape(original_shape)
+        return restored_data
 
 
     def get_dataset(self, data_type="all"):
