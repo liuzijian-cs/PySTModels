@@ -48,9 +48,9 @@ if __name__ == '__main__':
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
-    parser.add_argument('--data', type=str, default='SST',
+    parser.add_argument('--data', type=str, default='PEMS',
                         help='data list: [PEMS, SST], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path', type=str, default='./data/SST/Nan_Hai.csv')
+    parser.add_argument('--data_path', type=str, default='./data/PEMS/PEMS04.npz')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',

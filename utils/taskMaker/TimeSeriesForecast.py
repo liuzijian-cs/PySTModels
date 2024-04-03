@@ -1,5 +1,5 @@
 from utils.taskMaker.BasicTaskMaker import BasicTask
-from utils.base_function import print_log, Color
+from utils.base_function import Color, print_log
 import time
 import torch
 import torch.nn as nn
@@ -47,8 +47,7 @@ class Task(BasicTask):
 
     def train(self):
         t1 = time.time()
-        print_log(self.args,
-                  f"{Color.G}>>> ({(time.time() - t1):6.2f}s) Start training.{Color.RE}")
+        print_log(self.log_file,f"{Color.G}>>> ({(time.time() - t1):6.2f}s) Start training.{Color.RE}")
         iter_count = 0
         for epoch in range(self.args.epochs):
             self.model.train()
@@ -76,8 +75,8 @@ class Task(BasicTask):
                 else:
                     y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
                     if self.args.data_inverse_scale:
-                        y_pred = torch.tensor(self.DataProvider.inverse_transform(y_pred)).to(self.device)
-                        y_true = torch.tensor(self.DataProvider.inverse_transform(y_true)).to(self.device)
+                        y_pred = torch.tensor(self.DataProvider.inverse_transform(y_pred, "train")).to(self.device)
+                        y_true = torch.tensor(self.DataProvider.inverse_transform(y_true, "train")).to(self.device)
                     loss = self.model_criterion(y_pred, y_true)
                     loss_item = loss.item()
                     mae = self._mae(y_pred, y_true)

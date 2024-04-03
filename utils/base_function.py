@@ -1,11 +1,9 @@
-import os
 import re
 
 
 # function list:
 # |- print_log(args, string) : Output logs to console and write to log file.
 # |- print_log_args(args) : Output args to console and write to log file.
-
 
 class Color:
     K = '\033[30m'  # 黑色 BLACK
@@ -19,13 +17,9 @@ class Color:
     RE = '\033[0m'  # RESET
 
 
-def print_log(args, string, recursion_depth=1):
-    """
-    Output the input string to a log file and to the console via the print() function.
-    """
-    cleaned_string = (' ' * (recursion_depth * 2)) + re.sub(r'\x1b\[[0-9;]*m', '', string)  # 删除转义字符
-
-    log_file = open(args.log_file, 'a')
+def print_log(log_file, string):
+    cleaned_string = re.sub(r'\x1b\[[0-9;]*m', '', string)  # 删除转义字符
+    log_file = open(log_file, 'a')
     log_file.write(cleaned_string + '\n')
     log_file.flush()
     print(string)

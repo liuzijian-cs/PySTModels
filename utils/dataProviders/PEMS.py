@@ -1,4 +1,8 @@
-from utils.base_function import print_log, Color
+from typing import Tuple
+
+from torch import Tensor
+
+from utils.base_function import Color, print_log
 from utils.dataProviders.BasicDataProvider import BasicDataProvider
 import torch
 import numpy as np
@@ -6,43 +10,40 @@ import os
 
 
 class DataProvider(BasicDataProvider):
-    def __init__(self, args, scale=True, scaler=None, device=None):
-        super(DataProvider, self).__init__(args, scale, scaler, device)
+    def __init__(self, args, scaler=None, device=None):
+        super(DataProvider, self).__init__(args, scaler, device)
 
-    def _load_data(self):
-        return np.load(os.path.join(self.args.data_path), allow_pickle=True)['data'][:, :, 0]  # traffic flow
+    def _load_data(self) -> np.array:
+        return np.load(os.path.join(self.data_path), allow_pickle=True)['data'][:, :, 0]  # traffic flow
 
-    def _split_data(self):
+    def _split_data(self, data: np.array) -> np.array:
         """
         Split the dataset strictly in time order
+        :return data_train, data_valid, data_test
         """
         # Train-Valid-Test Split
-        train_ratio = 1 - self.args.valid_ratio - self.args.test_ratio
+        train_ratio = 1 - self.valid_ratio - self.test_ratio
         if train_ratio < 0 or train_ratio > 1:
             raise ValueError('Invalid ratio settings. The sum of train, valid and test ratio must be 1')
-        train_end = int(train_ratio * self.data.shape[0])
-        valid_end = train_end + int(self.args.valid_ratio * self.data.shape[0])
-        return self.data[:train_end], self.data[train_end:valid_end], self.data[valid_end:], self.data[:valid_end]
+        train_end = int(train_ratio * data.shape[0])
+        valid_end = train_end + int(self.valid_ratio * data.shape[0])
+        return data[:train_end], data[train_end:valid_end], data[valid_end:]
 
-    def __len__(self):
-        return len(self.data) - self.args.seq_len - self.args.pred_len + 1
-
-    def _prepare_data(self, data_type):
+    def _prepare_data(self, data_type) -> tuple[Tensor, Tensor]:
         """
-        :args: seq_len, pred_len
-        :return:
+        :return: x :torch.Tensor [T, seq_len, N] , y :torch.Tensor [T, pred_len, N]
         """
-        assert data_type in ['train', 'valid', 'test', "train-valid", "all"]
-        end_index = len(self.dataset_dict[data_type]) - self.args.seq_len - self.args.pred_len + 1
-        x_shape = (end_index, self.args.seq_len, self.dataset_dict[data_type].shape[-1])
-        y_shape = (end_index, self.args.pred_len, self.dataset_dict[data_type].shape[-1])
+        assert data_type in ['train', 'valid', 'test']
+        end_index = len(self.data_dict[data_type]) - self.seq_len - self.pred_len + 1
+        x_shape = (end_index, self.seq_len, self.data_dict[data_type].shape[-1])
+        y_shape = (end_index, self.pred_len, self.data_dict[data_type].shape[-1])
         # Preallocate memory
         x = torch.zeros(x_shape, dtype=torch.float, device=self.device)
         y = torch.zeros(y_shape, dtype=torch.float, device=self.device)
         for i in range(end_index):
-            x[i] = torch.tensor(self.dataset_dict[data_type][i:i + self.args.seq_len], device=self.device)
+            x[i] = torch.tensor(self.data_dict[data_type][i:i + self.seq_len], device=self.device)
             y[i] = torch.tensor(
-                self.dataset_dict[data_type][i + self.args.seq_len: i + self.args.seq_len + self.args.pred_len],
+                self.data_dict[data_type][i + self.seq_len: i + self.seq_len + self.pred_len],
                 device=self.device)
         return x, y
 
