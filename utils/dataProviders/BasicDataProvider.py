@@ -15,7 +15,7 @@ class BasicDataProvider(Dataset):
         self.device = device
         # 2. load data
         t2 = time.time()
-        self.data = self._load_data()
+        self.data = self._load_data()  # Read ahead fetches data into memory 预读取数据至内存
         print_log(self.args,
                   f"{Color.P}DataProvider[init] ({(t2 - t1):6.2f}s):{Color.RE} load dataset {Color.B}{self.args.data}{Color.RE}, shape: {Color.C}{self.data.shape}{Color.RE}, max = {self.data.max()}, min = {self.data.min()}, mean = {self.data.mean()}, median = {np.median(self.data)}")
         # 3. split data
