@@ -57,18 +57,21 @@ class Task(BasicTask):
                     loss.backward()
                     self.model_optimizer.step()
 
-                if self.args.data_inverse_scale:
-                    y_pred = torch.tensor(self.DataProvider.inverse_transform(y_pred)).to(self.device)
-                    y_true = torch.tensor(self.DataProvider.inverse_transform(y_true)).to(self.device)
-
                 loss_item = loss.item()
                 mae = self._mae(y_pred, y_true)
                 rmse = self._rmse(y_pred, y_true)
                 mape = self._mape(y_pred, y_true)
 
+                if self.args.data_inverse_scale:
+                    y_pred = torch.tensor(self.DataProvider.inverse_transform(y_pred)).to(self.device)
+                    y_true = torch.tensor(self.DataProvider.inverse_transform(y_true)).to(self.device)
+                    mae_ = self._mae(y_pred, y_true)
+                    rmse_ = self._rmse(y_pred, y_true)
+                    mape_ = self._mape(y_pred, y_true)
+
                 if self.args.log_interval_iter and batch_idx % self.args.log_interval_iter == 0:
                     print_log(self.log_file,
-                              f"{Color.P}epoch{epoch:03d}-{batch_idx:03d} ({(time.time()-time_itor):4.2f}s/iter & {((time.time()-time_itor)*len(self.test_loader)):4.2f}s/epoch){Color.RE}: loss:{loss_item:.4f}, mae:{mae:.4f}, rmse:{rmse:.4f}, mape:{mape:.4f}")
+                              f"{Color.P}epoch{epoch:03d}-{batch_idx:03d} ({(time.time()-time_itor):4.2f}s/iter & {((time.time()-time_itor)*len(self.test_loader)):4.2f}s/epoch){Color.RE}: loss:{loss_item:.4f}, mae:{mae:.4f}({mae_:.4f}), rmse:{rmse:.4f}({rmse_:.4f}), mape:{mape:.4f}({mape_:.4f})")
                 iter_count += 1
 
 #

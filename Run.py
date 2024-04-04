@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     # 1.2 Model arguments:
     parser.add_argument('--epochs', type=int, default=10, help='number of train epochs')
-    parser.add_argument('--batch_size', type=int, default=32, help='Based on the size of the GPU memory')
+    parser.add_argument('--batch_size', type=int, default=8, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--amp', type=bool, default=False, help='Automatic Mixed Precision')
