@@ -84,7 +84,7 @@ class BasicDataProvider(Dataset):
                   f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} {name_dict[data_type]} : x: {Color.C}{x.shape}{Color.RE}, y: {Color.C}{y.shape}{Color.RE}, steps: {Color.C}{len(dataloader)}{Color.RE}, batch_size: {Color.B}{self.batch_size}{Color.RE}, shuffle: {Color.B}{self.shuffle}{Color.RE}, num_workers: {Color.B}{self.num_workers}{Color.RE}")
         return dataloader
 
-    def transform(self, data):
+    def transform(self, data) -> np.array:
         original_shape = data.shape  # Saves the shape of the original data 保存原始数据的形状
         if isinstance(data, torch.Tensor):
             data = data.detach().cpu().numpy()  # Ensure the data is on CPU and converted to numpy for the scaler
