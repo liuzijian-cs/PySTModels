@@ -37,7 +37,8 @@ if __name__ == '__main__':
     parser.add_argument('--gpu_id', type=str, default="0", help='GPU device id (single gpu)')
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
-    parser.add_argument('--num_workers', type=int, default=0 , help='CPU workers, if Windows system == 0 !')
+    parser.add_argument('--num_workers', type=int, default=0, help='CPU workers, if Windows system == 0 !')
+    parser.add_argument('--log_interval_iter', type=int, default=2, help='log output every number of iter')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')

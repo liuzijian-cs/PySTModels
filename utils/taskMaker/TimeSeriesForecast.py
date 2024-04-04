@@ -40,6 +40,7 @@ class Task(BasicTask):
         for epoch in range(self.args.epochs):
             self.model.train()
             for batch_idx, (batch_x, y_true) in enumerate(self.train_loader):
+                time_itor = time.time()
                 self.model_optimizer.zero_grad()
                 batch_x, y_true = batch_x.to(self.device), y_true.to(self.device)
 
@@ -65,8 +66,10 @@ class Task(BasicTask):
                 rmse = self._rmse(y_pred, y_true)
                 mape = self._mape(y_pred, y_true)
 
-                print_log(self.log_file,
-                          f"{Color.P}epoch{epoch}-{batch_idx}{Color.RE}: loss:{loss_item:.4f}, mae:{mae:.4f}, rmse:{rmse:.4f}, mape:{mape:.4f}")
+                if self.args.log_interval_iter and batch_idx % self.args.log_interval_iter == 0:
+                    print_log(self.log_file,
+                              f"{Color.P}epoch{epoch:03d}-{batch_idx:03d} ({(time.time()-time_itor):4.2f}s/iter & {((time.time()-time_itor)*len(self.test_loader)):4.2f}s/epoch){Color.RE}: loss:{loss_item:.4f}, mae:{mae:.4f}, rmse:{rmse:.4f}, mape:{mape:.4f}")
+                iter_count += 1
 
 #
 #
