@@ -14,7 +14,7 @@ from model.iTransformer_official import iTransformer_official
 # Global dictionary:
 data_dict = {
     'PEMS': PEMS,
-    # 'SST': SST,
+    'SST': SST,
 }
 
 model_dict = {
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
     parser.add_argument('--num_workers', type=int, default=0, help='CPU workers, if Windows system == 0 !')
-    parser.add_argument('--log_interval_iter', type=int, default=2, help='log output every number of iter')
+    parser.add_argument('--log_interval_iter', type=int, default=1, help='log output every number of iter')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
@@ -51,9 +51,9 @@ if __name__ == '__main__':
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
-    parser.add_argument('--data', type=str, default='PEMS',
+    parser.add_argument('--data', type=str, default='SST',
                         help='data list: [PEMS, SST], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path', type=str, default='./data/PEMS/PEMS04.npz')
+    parser.add_argument('--data_path', type=str, default='./data/SST/Nan_Hai.csv')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     # 1.2 Model arguments:
     parser.add_argument('--epochs', type=int, default=10, help='number of train epochs')
-    parser.add_argument('--batch_size', type=int, default=64, help='Based on the size of the GPU memory')
+    parser.add_argument('--batch_size', type=int, default=32, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--amp', type=bool, default=False, help='Automatic Mixed Precision')
