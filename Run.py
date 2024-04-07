@@ -38,10 +38,11 @@ if __name__ == '__main__':
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
     parser.add_argument('--num_workers', type=int, default=0, help='CPU workers, if Windows system == 0 !')
-    parser.add_argument('--log_interval_iter', type=int, default=1, help='log output every number of iter')
+    parser.add_argument('--log_interval_iter', type=int, default=5, help='log output every number of iter')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
+    parser.add_argument('--pic_save_path', type=str, default='./model_save/pictures')
 
     parser.add_argument('--model', type=str, default='iTransformer_official',
                         help='model list: [iTransformer, iTransformer_official]')
@@ -70,8 +71,8 @@ if __name__ == '__main__':
     parser.add_argument('--test_ratio', type=float, default=0.2, help='test ratio')
 
     # 1.2 Model arguments:
-    parser.add_argument('--epochs', type=int, default=10, help='number of train epochs')
-    parser.add_argument('--batch_size', type=int, default=8, help='Based on the size of the GPU memory')
+    parser.add_argument('--epochs', type=int, default=2, help='number of train epochs')
+    parser.add_argument('--batch_size', type=int, default=256, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=10, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
     parser.add_argument('--amp', type=bool, default=False, help='Automatic Mixed Precision')
@@ -91,7 +92,6 @@ if __name__ == '__main__':
     parser.add_argument('--output_attention', type=bool, default=False, help='return the attention matrix')
 
     # TimeSeries:
-    parser.add_argument("--data_inverse_scale", type=bool, default=True, help='inverse')  # TODO
 
     # 1.2
     # 1.2 Model:
@@ -106,3 +106,4 @@ if __name__ == '__main__':
 
     Task = task_dict[args.task].Task(args, model_dict, data_dict)
     Task.train()
+    Task.draw_predictions("test")

@@ -12,7 +12,7 @@ class DataProvider(BasicDataProvider):
 
     def _load_data(self):
         df = pd.read_csv(self.data_path, index_col=0)
-        return df.iloc[1:,].to_numpy()
+        return df.iloc[1:,:10].to_numpy()
 
     def _split_data(self, data):
         """
@@ -31,7 +31,7 @@ class DataProvider(BasicDataProvider):
         """
         :return: x :torch.Tensor [T, seq_len, N] , y :torch.Tensor [T, pred_len, N]
         """
-        assert data_type in ['train', 'valid', 'test']
+        assert data_type in ['train', 'valid', 'test', 'all']
         end_index = len(self.data_dict[data_type]) - self.seq_len - self.pred_len + 1
         x_shape = (end_index, self.seq_len, self.data_dict[data_type].shape[-1])
         y_shape = (end_index, self.pred_len, self.data_dict[data_type].shape[-1])

@@ -24,16 +24,16 @@ class BasicDataProvider(Dataset):
         self.log_file = args.log_file
         # 2. Initialization
         self.scaler = StandardScaler() if scaler is None else scaler
-        data = self._load_data()
+        self.data = self._load_data()
         t2 = time.time()
         print_log(self.log_file,
-                  f"{Color.P}DataProvider[init] ({(t2 - time_start):6.2f}s):{Color.RE} Load dataset {Color.B}{args.data}{Color.RE}, shape: {Color.C}{data.shape}{Color.RE}, max = {Color.C}{data.max()}{Color.RE}, min = {Color.C}{data.min()}{Color.RE}, mean = {Color.C}{data.mean()}{Color.RE}, median = {Color.C}{np.median(data)}{Color.RE}")
-        data_train, data_valid, data_test = self._split_data(data)
+                  f"{Color.P}DataProvider[init] ({(t2 - time_start):6.2f}s):{Color.RE} Load dataset {Color.B}{args.data}{Color.RE}, shape: {Color.C}{self.data.shape}{Color.RE}, max = {Color.C}{self.data.max()}{Color.RE}, min = {Color.C}{self.data.min()}{Color.RE}, mean = {Color.C}{self.data.mean()}{Color.RE}, median = {Color.C}{np.median(self.data)}{Color.RE}")
+        data_train, data_valid, data_test = self._split_data(self.data)
         self.scaler.fit(data_train)
         self.data_train = self.scaler.transform(data_train)
         self.data_valid = self.scaler.transform(data_valid)
         self.data_test = self.scaler.transform(data_test)
-        self.data_dict = {"train": self.data_train, "valid": self.data_valid, "test": self.data_test}
+        self.data_dict = {"train": self.data_train, "valid": self.data_valid, "test": self.data_test, "all": self.data}
         print_log(self.log_file,
                   f"{Color.P}DataProvider[init] ({(time.time() - t2):6.2f}s):{Color.RE} Scaler: {Color.B}{self.scaler}{Color.RE}, {Color.G}Train:{self.data_train.shape}{Color.RE}, {Color.Y}Valid:{self.data_valid.shape}{Color.RE}, {Color.R}Test:{self.data_test.shape}{Color.RE} ")
 
@@ -69,7 +69,7 @@ class BasicDataProvider(Dataset):
         * CH: 实现数据读取、处理并返回dataloader`
         :return: train_loader, valid_loader, test_loader
         """
-        assert data_type in ["train", "valid", "test"]
+        assert data_type in ["train", "valid", "test", "all"]
         t1 = time.time()
         x, y = self._prepare_data(data_type)
         data = torch.utils.data.TensorDataset(x, y)
@@ -78,7 +78,8 @@ class BasicDataProvider(Dataset):
         name_dict = {
             "train": f"{Color.G}Train data{Color.RE}",
             "valid": f"{Color.Y}Valid data{Color.RE}",
-            "test": f"{Color.R}Test data{Color.RE}"
+            "test": f"{Color.R}Test data{Color.RE}",
+            "all": f"{Color.R}All data{Color}"
         }
         print_log(self.log_file,
                   f"{Color.P}DataProvider[prep] ({(time.time() - t1):6.2f}s):{Color.RE} {name_dict[data_type]} : x: {Color.C}{x.shape}{Color.RE}, y: {Color.C}{y.shape}{Color.RE}, steps: {Color.C}{len(dataloader)}{Color.RE}, batch_size: {Color.B}{self.batch_size}{Color.RE}, shuffle: {Color.B}{self.shuffle}{Color.RE}, num_workers: {Color.B}{self.num_workers}{Color.RE}")
@@ -99,3 +100,8 @@ class BasicDataProvider(Dataset):
         data_reshaped = data.reshape(-1, data.shape[-1])
         restored_data = self.scaler.inverse_transform(data_reshaped).reshape(original_shape)
         return restored_data
+
+    def get_data(self, data_type):
+        assert data_type in ["train", "valid", "test", "all"]
+        return self.data_dict[data_type]
+

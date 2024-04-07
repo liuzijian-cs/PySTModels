@@ -33,7 +33,7 @@ class DataProvider(BasicDataProvider):
         """
         :return: x :torch.Tensor [T, seq_len, N] , y :torch.Tensor [T, pred_len, N]
         """
-        assert data_type in ['train', 'valid', 'test']
+        assert data_type in ['train', 'valid', 'test', 'all']
         end_index = len(self.data_dict[data_type]) - self.seq_len - self.pred_len + 1
         x_shape = (end_index, self.seq_len, self.data_dict[data_type].shape[-1])
         y_shape = (end_index, self.pred_len, self.data_dict[data_type].shape[-1])
