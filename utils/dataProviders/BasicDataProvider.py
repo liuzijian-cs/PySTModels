@@ -78,7 +78,7 @@ class BasicDataProvider(Dataset):
         name_dict = {
             "train": f"{Color.G}Train data{Color.RE}",
             "valid": f"{Color.Y}Valid data{Color.RE}",
-            "test": f"{Color.R}Test data{Color.RE}",
+            "test ": f"{Color.R}Test data{Color.RE}",
             "all": f"{Color.R}All data{Color}"
         }
         print_log(self.log_file,

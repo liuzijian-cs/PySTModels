@@ -111,7 +111,7 @@ class Task(BasicTask):
 
                 if self.args.log_interval_iter and batch_idx % self.args.log_interval_iter == 0:
                     print_log(self.log_file,
-                              f"{Color.P}epoch{epoch:03d}-{batch_idx:03d} {Color.RE}: loss:{loss_item:.6f}, MAE(inverse):{mae_inverse_scale:.6f}({mae:.6f}), rmse:{rmse:.6f}, mape:{mape:.6f}")
+                              f"{Color.P}epoch{epoch:03d}-{batch_idx:03d} {Color.RE}: loss:{loss_item:.6f}, MAE(inverse):{mae:.6f}({mae_inverse_scale:.6f}), rmse:{rmse:.6f}, mape:{mape:.6f}")
                 iter_count += 1
                 # Save iter record
                 iter_loss.append(loss_item)
@@ -127,7 +127,7 @@ class Task(BasicTask):
             epoch_rmse = np.average(iter_rmse)
             epoch_mape = np.average(iter_mape)
             epoch_mae_inverse = np.average(iter_mae_inverse)
-            print(
+            print_log(self.log_file,
                 f"{Color.G}Train epoch-{epoch:03d}:{Color.RE} Train loss:{Color.C}{epoch_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{epoch_mae:.6f}({epoch_mae_inverse:.6f}){Color.RE}, RMSE: {Color.C}{epoch_rmse:.6f}{Color.RE}, MAPE:{Color.C}{epoch_mape:.6f}{Color.RE}")
 
             self.record['train']['loss'].append(loss_item)
@@ -137,7 +137,7 @@ class Task(BasicTask):
             self.record['train']['mae_'].append(mae_inverse_scale)
             # VALID:
             valid_loss, valid_mae, valid_rmse, valid_mape, valid_mae_ = self.valid()
-            print(
+            print_log(self.log_file,
                 f"{Color.Y}Valid epoch-{epoch:03d}:{Color.RE} Valid loss:{Color.C}{valid_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{valid_mae:.6f}({valid_mae_:.6f}){Color.RE}, RMSE: {Color.C}{valid_rmse:.6f}{Color.RE}, MAPE:{Color.C}{valid_mape:.6f}{Color.RE}")
 
     def draw_predictions(self, data_type="all"):
@@ -170,6 +170,7 @@ class Task(BasicTask):
                 plt.plot(pd, label='Prediction', linewidth=2)
                 plt.legend()
                 plt.savefig(os.path.join(os.path.join(self.args.pic_save_path, f"batch_{batch_idx}.png")), bbox_inches='tight')
+                plt.close()
 
 
         #         y_pred = y_pred.detach().cpu().numpy()
