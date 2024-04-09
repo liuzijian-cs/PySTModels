@@ -128,7 +128,7 @@ class Task(BasicTask):
             epoch_mape = np.average(iter_mape)
             epoch_mae_inverse = np.average(iter_mae_inverse)
             print_log(self.log_file,
-                f"{Color.G}Train epoch-{epoch:03d}:{Color.RE} Train loss:{Color.C}{epoch_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{epoch_mae:.6f}({epoch_mae_inverse:.6f}){Color.RE}, RMSE: {Color.C}{epoch_rmse:.6f}{Color.RE}, MAPE:{Color.C}{epoch_mape:.6f}{Color.RE}")
+                      f"{Color.G}Train epoch-{epoch:03d}:{Color.RE} Train loss:{Color.C}{epoch_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{epoch_mae:.6f}({epoch_mae_inverse:.6f}){Color.RE}, RMSE: {Color.C}{epoch_rmse:.6f}{Color.RE}, MAPE:{Color.C}{epoch_mape:.6f}{Color.RE}")
 
             self.record['train']['loss'].append(loss_item)
             self.record['train']['mae'].append(mae)
@@ -138,40 +138,54 @@ class Task(BasicTask):
             # VALID:
             valid_loss, valid_mae, valid_rmse, valid_mape, valid_mae_ = self.valid()
             print_log(self.log_file,
-                f"{Color.Y}Valid epoch-{epoch:03d}:{Color.RE} Valid loss:{Color.C}{valid_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{valid_mae:.6f}({valid_mae_:.6f}){Color.RE}, RMSE: {Color.C}{valid_rmse:.6f}{Color.RE}, MAPE:{Color.C}{valid_mape:.6f}{Color.RE}")
+                      f"{Color.Y}Valid epoch-{epoch:03d}:{Color.RE} Valid loss:{Color.C}{valid_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{valid_mae:.6f}({valid_mae_:.6f}){Color.RE}, RMSE: {Color.C}{valid_rmse:.6f}{Color.RE}, MAPE:{Color.C}{valid_mape:.6f}{Color.RE}")
 
     def draw_predictions(self, data_type="all"):
         assert data_type in ["train", "valid", "test", "all"]
+        # Get Ground Truth:
         ground_truth = self.DataProvider.get_data(data_type=data_type)
         ground_truth = self.DataProvider.transform(ground_truth)
+        # Get Prediction:
         dataloader = self.DataProvider.data_loader(data_type=data_type)
-        predictions_matrix = np.zeros((ground_truth.shape[0], ground_truth.shape[1], self.args.pred_len))
-        print(predictions_matrix.shape)
-
+        prediction = np.zeros((ground_truth.shape[0] + self.args.pred_len, ground_truth.shape[1], self.args.pred_len))
+        # prediction [T + pred_len(P), N, pred_len(P)]
         self.model.eval()
         with torch.no_grad():
             for batch_idx, (batch_x, y_true) in enumerate(dataloader):
-                batch_x, y_true = batch_x.to(self.device), y_true.to(self.device)
+                batch_x = batch_x.to(self.device)
                 # Get y_true, attention_weight
                 if self.args.amp and self.device == 'cuda':
                     with torch.cuda.amp.autocast():
                         y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
                 else:
                     y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
-                true = y_true.detach().cpu().numpy()
-                pred = y_pred.detach().cpu().numpy()
-                input = batch_x.detach().cpu().numpy()
-                shape = input.shape
-                input = self.DataProvider.inverse_transform(input)
-                gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
-                pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
-                plt.figure()
-                plt.plot(gt, label='GroundTruth', linewidth=2)
-                plt.plot(pd, label='Prediction', linewidth=2)
-                plt.legend()
-                plt.savefig(os.path.join(os.path.join(self.args.pic_save_path, f"batch_{batch_idx}.png")), bbox_inches='tight')
-                plt.close()
+                y_pred = self.DataProvider.inverse_transform(y_pred).transpose(0, 2, 1)  # [B, P, N] -> [B, N, P]
+                start_idx = self.args.batch_size * batch_idx
+                for b in range(y_pred.shape[0]):
+                    for p in range(y_pred.shape[2]):
+                        prediction[start_idx + b + p, :, p] = y_pred[b, :, p]
+        non_zero_count = np.count_nonzero(prediction,axis=2)
+        non_zero_count = np.where(non_zero_count == 0, 1, non_zero_count)
+        prediction = prediction.sum(axis=2) / non_zero_count
+        print(prediction.shape)
 
+                # for p in range(self.args.pred_len):
+                #     prediction[start_idx:end_idx + p, :, p] = y_pred[:, :, p]
+
+
+                # true = y_true.detach().cpu().numpy()
+                # pred = y_pred.detach().cpu().numpy()
+                # input = batch_x.detach().cpu().numpy()
+                # shape = input.shape
+                # input = self.DataProvider.inverse_transform(input)
+                # gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
+                # pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
+                # plt.figure()
+                # plt.plot(gt, label='GroundTruth', linewidth=2)
+                # plt.plot(pd, label='Prediction', linewidth=2)
+                # plt.legend()
+                # plt.savefig(os.path.join(os.path.join(self.args.pic_save_path, f"batch_{batch_idx}.png")), bbox_inches='tight')
+                # plt.close()
 
         #         y_pred = y_pred.detach().cpu().numpy()
         #         y_true = np.transpose(y_pred, (0, 2, 1))

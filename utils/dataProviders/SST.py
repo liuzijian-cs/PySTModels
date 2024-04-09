@@ -12,7 +12,7 @@ class DataProvider(BasicDataProvider):
 
     def _load_data(self):
         df = pd.read_csv(self.data_path, index_col=0)
-        return df.iloc[1:,:100].to_numpy()
+        return df.iloc[1:,:10].to_numpy()
 
     def _split_data(self, data):
         """
