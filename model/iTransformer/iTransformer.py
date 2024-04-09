@@ -7,6 +7,7 @@ from model.iTransformer.layers.Embedding import InvertedEmbedding
 
 class Model(nn.Module):
     def __init__(self, args):
+        
         super(Model, self).__init__()
         # variables
         self.seq_len = args.seq_len
