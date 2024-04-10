@@ -46,7 +46,32 @@ class Task(BasicTask):
         return mae, mae_inv, rmse, mape
 
     def test(self):
-        None
+        iter_loss, iter_mae, iter_rmse, iter_mape, iter_mae_inverse = [], [], [], [], []
+        self.model.eval()
+        with torch.no_grad():
+            for batch_idx, (batch_x, y_true) in enumerate(self.test_loader):
+                batch_x, y_true = batch_x.to(self.device), y_true.to(self.device)
+                if self.args.amp and self.device == 'cuda':
+                    with torch.cuda.amp.autocast():
+                        y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
+                else:
+                    y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
+                valid_loss = self.model_criterion(y_pred, y_true).item()
+                mae, mae_inverse_scale, rmse, mape = self._calculate_evaluation(y_pred, y_true)
+                iter_loss.append(valid_loss)
+                iter_mae.append(mae)
+                iter_rmse.append(rmse)
+                iter_mape.append(mape)
+                iter_mae_inverse.append(mae_inverse_scale)
+            # Record:
+            epoch_loss = np.average(iter_loss)
+            epoch_mae = np.average(iter_mae)
+            epoch_rmse = np.average(iter_rmse)
+            epoch_mape = np.average(iter_mape)
+            epoch_mae_inverse = np.average(iter_mae_inverse)
+        return epoch_loss, epoch_mae, epoch_rmse, epoch_mape, epoch_mae_inverse
+
+
 
     def valid(self):
         iter_loss, iter_mae, iter_rmse, iter_mape, iter_mae_inverse = [], [], [], [], []
@@ -62,11 +87,6 @@ class Task(BasicTask):
 
                 valid_loss = self.model_criterion(y_pred, y_true).item()
                 mae, mae_inverse_scale, rmse, mape = self._calculate_evaluation(y_pred, y_true)
-                # TODO
-                # y_pred = y_pred.detach().cpu().numpy()
-                # print(f"max={y_pred.max():.4f}, min={y_pred.min():.4f}, mean={y_pred.mean():.4f}")
-                # y_pred = self.DataProvider.inverse_transform(y_pred)
-                # print(f"max={y_pred.max():.4f}, min={y_pred.min():.4f}, mean={y_pred.mean():.4f}")
                 # Record:
                 iter_loss.append(valid_loss)
                 iter_mae.append(mae)
@@ -139,6 +159,12 @@ class Task(BasicTask):
             valid_loss, valid_mae, valid_rmse, valid_mape, valid_mae_ = self.valid()
             print_log(self.log_file,
                       f"{Color.Y}Valid epoch-{epoch:03d}:{Color.RE} Valid loss:{Color.C}{valid_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{valid_mae:.6f}({valid_mae_:.6f}){Color.RE}, RMSE: {Color.C}{valid_rmse:.6f}{Color.RE}, MAPE:{Color.C}{valid_mape:.6f}{Color.RE}")
+        # test:
+        test_loss, test_mae, test_rmse, test_mape, test_mae_ = self.test()
+        print_log(self.log_file,
+                  f"{Color.R}Test :{Color.RE} Test loss:{Color.C}{test_loss:.6f}{Color.RE}, MAE(inverse): {Color.C}{test_mae:.6f}({test_mae_:.6f}){Color.RE}, RMSE: {Color.C}{test_rmse:.6f}{Color.RE}, MAPE:{Color.C}{test_mape:.6f}{Color.RE}")
+
+        torch.save(self.model.state_dict(), os.path.join(self.args.model_save_path, f"epoch-{epoch:03d}.pth"))  # 模型保存
 
     def draw_predictions(self, data_type="all"):
         assert data_type in ["train", "valid", "test", "all"]

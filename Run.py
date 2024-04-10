@@ -10,6 +10,7 @@ from utils.taskMaker import TimeSeriesForecast
 # Models:
 from model.iTransformer import iTransformer
 from model.iTransformer_official import iTransformer_official
+from model.LSTM import LSTM
 
 # Global dictionary:
 data_dict = {
@@ -19,7 +20,8 @@ data_dict = {
 
 model_dict = {
     'iTransformer': iTransformer,
-    'iTransformer_official': iTransformer_official
+    'iTransformer_official': iTransformer_official,
+    'LSTM': LSTM
 }
 
 task_dict = {
@@ -38,13 +40,13 @@ if __name__ == '__main__':
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
     parser.add_argument('--num_workers', type=int, default=0, help='CPU workers, if Windows system == 0 !')
-    parser.add_argument('--log_interval_iter', type=int, default=10, help='log output every number of iter')
+    parser.add_argument('--log_interval_iter', type=int, default=20, help='log output every number of iter')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
     parser.add_argument('--pic_save_path', type=str, default='./model_save/pictures')
 
-    parser.add_argument('--model', type=str, default='iTransformer_official',
+    parser.add_argument('--model', type=str, default='LSTM',
                         help='model list: [iTransformer, iTransformer_official]')
     parser.add_argument('--task', type=str, default='TimeSeriesForecast',
                         help='task list:[Task]')
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_ratio', type=float, default=0.2, help='test ratio')
 
     # 1.2 Model arguments:
-    parser.add_argument('--epochs', type=int, default=10, help='number of train epochs')
+    parser.add_argument('--epochs', type=int, default=100, help='number of train epochs')
     parser.add_argument('--batch_size', type=int, default=64, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=7, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
@@ -83,6 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--d_ff', type=int, default=1024, help='Dimensionality of the FFN')
     parser.add_argument('--enc_layers', type=int, default=4, help='Number of encoder layers')
     parser.add_argument('--dec_layers', type=int, default=4, help='Number of decoder layers')
+    parser.add_argument('--model_layers', type=int, default=4, help='Number of model layers')
     # 1.2.1 Attention
     parser.add_argument('--n_heads', type=int, default=8, help='number of attention heads')
     parser.add_argument('--attn_dropout', type=float, default=0.1, help='dropout in attention modules')
