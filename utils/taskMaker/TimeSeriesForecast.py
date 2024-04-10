@@ -144,7 +144,7 @@ class Task(BasicTask):
         assert data_type in ["train", "valid", "test", "all"]
         # Get Ground Truth:
         ground_truth = self.DataProvider.get_data(data_type=data_type)
-        ground_truth = self.DataProvider.transform(ground_truth)
+        # ground_truth = self.DataProvider.inverse_transform(ground_truth)
         # Get Prediction:
         dataloader = self.DataProvider.data_loader(data_type=data_type)
         prediction = np.zeros((ground_truth.shape[0] + self.args.pred_len, ground_truth.shape[1], self.args.pred_len))
@@ -159,87 +159,24 @@ class Task(BasicTask):
                         y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
                 else:
                     y_pred, attention_weight = self.model(batch_x)  # [B, pred_len, N]
-                y_pred = self.DataProvider.inverse_transform(y_pred).transpose(0, 2, 1)  # [B, P, N] -> [B, N, P]
+                # y_pred = self.DataProvider.inverse_transform(y_pred).transpose(0, 2, 1)  # [B, P, N] -> [B, N, P]
+                y_pred = y_pred.detach().cpu().numpy().transpose(0,2,1)
                 start_idx = self.args.batch_size * batch_idx
                 for b in range(y_pred.shape[0]):
                     for p in range(y_pred.shape[2]):
                         prediction[start_idx + b + p, :, p] = y_pred[b, :, p]
+        print(f"min:{prediction.min():.4f}, max:{prediction.max():.4f}, mean:{prediction.mean():.4f}")
         non_zero_count = np.count_nonzero(prediction,axis=2)
         non_zero_count = np.where(non_zero_count == 0, 1, non_zero_count)
         prediction = prediction.sum(axis=2) / non_zero_count
         print(prediction.shape)
-
-                # for p in range(self.args.pred_len):
-                #     prediction[start_idx:end_idx + p, :, p] = y_pred[:, :, p]
-
-
-                # true = y_true.detach().cpu().numpy()
-                # pred = y_pred.detach().cpu().numpy()
-                # input = batch_x.detach().cpu().numpy()
-                # shape = input.shape
-                # input = self.DataProvider.inverse_transform(input)
-                # gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
-                # pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
-                # plt.figure()
-                # plt.plot(gt, label='GroundTruth', linewidth=2)
-                # plt.plot(pd, label='Prediction', linewidth=2)
-                # plt.legend()
-                # plt.savefig(os.path.join(os.path.join(self.args.pic_save_path, f"batch_{batch_idx}.png")), bbox_inches='tight')
-                # plt.close()
-
-        #         y_pred = y_pred.detach().cpu().numpy()
-        #         y_true = np.transpose(y_pred, (0, 2, 1))
-        #         # y_pred = self.DataProvider.inverse_transform(y_pred)
-        #         start_idx = self.args.batch_size * batch_idx
-        #         end_idx = start_idx + y_pred.shape[0]
-        #         for t in range(self.args.pred_len):
-        #             # predictions_matrix[start_idx:end_idx, :, t] += y_pred[:, t, :].detach().cpu().numpy()
-        #             predictions_matrix[start_idx, :, t] = y_pred[:, :, t]
-        #
-        # for t in range(self.args.pred_len):
-        #     predictions_matrix[:, :, t] /= np.count_nonzero(predictions_matrix[:, :, t], axis=0)
-
-        # prediction = np.mean(predictions_matrix, axis=2)
-        #
-        # # prediction = np.mean(prediction, axis=0)  # 如果有多个值，计算其平均值
-        # # ground_truth = np.mean(ground_truth, axis=0)
-        #
-        # os.makedirs(self.args.pic_save_path, exist_ok=True)
-        # for i in range(prediction.shape[1]):  # 假设第二维是不同的变量
-        #     plt.figure(figsize=(20, 6))
-        #     plt.plot(ground_truth[:, i], label='Ground Truth', color='blue')
-        #     plt.plot(prediction[:, i], label='Prediction', color='red')
-        #     plt.title(f'Variable {i} Prediction')
-        #     plt.legend()
-        #     save_path = os.path.join(self.args.pic_save_path, f"variable_{i}.png")
-        #     plt.savefig(save_path)
-        #     plt.close()  # 关闭图像，避免内存泄漏
-
-    #
-#
-#
-#
-#
-#         # Train:
-#         for epoch in range(self.args.epochs):
-#             train_loss = []  # TODO
-#             self.model.train()  # Adjust the model to training mode
-#             for i, (x_batch, y_batch, x_batch_mask, y_batch_mask) in enumerate(train_loader):
-#                 self.model_optimizer.zero_grad()
-#                 # Data: to device
-#                 x_batch = x_batch.float().to(self.args.device)
-#                 y_batch = y_batch.float().to(self.args.device)
-#                 if x_batch_mask is not None:
-#                     x_batch_mask = x_batch_mask.float().to(self.args.device)
-#                     y_batch_mask = y_batch_mask.float().to(self.args.device)
-#
-#
-# # if self.args.features == "M":  # Multivariate predicts multivariate.
-#     #     None
-#     # elif self.args.features == "MS":
-#     #     return None  # TODO
-#     # elif self.args.features == "S":
-#     #     return None  # TODO
-#     # else:
-#     #     raise RuntimeError(
-#     #         f'{Color.R}PEMS.py! : RuntimeError, There is no matching features value, make sure the --features parameter is in {Color.B}[M,MS,S]{Color.R}{Color.RE}')
+        print(f"min:{prediction.min():.4f}, max:{prediction.max():.4f}, mean:{prediction.mean():.4f}")
+        for i in range(prediction.shape[1]):  # 假设第二维是不同的变量
+            plt.figure(figsize=(20, 6))
+            plt.plot(ground_truth[:, i], label='Ground Truth', color='blue')
+            plt.plot(prediction[:, i], label='Prediction', color='red')
+            plt.title(f'Variable {i} Prediction')
+            plt.legend()
+            save_path = os.path.join(self.args.pic_save_path, f"variable_{i}.png")
+            plt.savefig(save_path)
+            plt.close()  # 关闭图像，避免内存泄漏

@@ -30,6 +30,7 @@ class BasicDataProvider(Dataset):
                   f"{Color.P}DataProvider[init] ({(t2 - time_start):6.2f}s):{Color.RE} Load dataset {Color.B}{args.data}{Color.RE}, shape: {Color.C}{self.data.shape}{Color.RE}, max = {Color.C}{self.data.max()}{Color.RE}, min = {Color.C}{self.data.min()}{Color.RE}, mean = {Color.C}{self.data.mean()}{Color.RE}, median = {Color.C}{np.median(self.data)}{Color.RE}")
         data_train, data_valid, data_test = self._split_data(self.data)
         self.scaler.fit(data_train)
+        self.data = self.scaler.transform(data_train)
         self.data_train = self.scaler.transform(data_train)
         self.data_valid = self.scaler.transform(data_valid)
         self.data_test = self.scaler.transform(data_test)
