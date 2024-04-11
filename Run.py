@@ -45,10 +45,10 @@ def args_parser():
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
     parser.add_argument('--pic_save_path', type=str, default='./model_save/pictures')
 
-    parser.add_argument('--model', type=str, default='iTransformer_official',
+    parser.add_argument('--model', type=str, default='iTransformer',
                         help='model list: [iTransformer, iTransformer_official]')
     parser.add_argument('--task', type=str, default='TimeSeriesForecast',
-                        help='task list:[Task]')
+                        help='task list:[TimeSeriesForecast]')
     parser.add_argument('--seed', type=int, default=None, help='random seed')
 
     # 1.2 Data arguments:
@@ -72,7 +72,7 @@ def args_parser():
     parser.add_argument('--test_ratio', type=float, default=0.2, help='test ratio')
 
     # 1.2 Model arguments:
-    parser.add_argument('--epochs', type=int, default=50, help='number of train epochs')
+    parser.add_argument('--epochs', type=int, default=2, help='number of train epochs')
     parser.add_argument('--batch_size', type=int, default=64, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=7, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
     Task = task_dict[args.task].Task(args, model_dict, data_dict)
     Task.train()
-    # Task.draw_predictions("test")
+    Task.draw_predictions("test",1)
     # model_path = "./model_save/epoch-040.pth"
     # Task.load_model(model_path)
     # Task.draw_predictions('valid', 1)
