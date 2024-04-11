@@ -17,12 +17,13 @@ class Color:
     RE = '\033[0m'  # RESET
 
 
-def print_log(log_file, string):
+def print_log(log_file, string, print_to_console=True):
     cleaned_string = re.sub(r'\x1b\[[0-9;]*m', '', string)  # 删除转义字符
     log_file = open(log_file, 'a')
     log_file.write(cleaned_string + '\n')
     log_file.flush()
-    print(string)
+    if print_to_console:
+        print(string)
 
 
 def print_log_args(args):

@@ -15,25 +15,27 @@ class BasicTask:
         self.amp_scaler = None
         self.device = self._prepare_device_seed()
         t2 = time.time()
-        print_log(self.log_file, f"{Color.P}TaskMaker[init]    ({(t2 - t1):6.2f}s):{Color.RE} Deivce and seed initialization is complete, using device: {Color.B}{self.device}{Color.RE}, using seed: {Color.B}{self.args.seed}{Color.RE}")
+        print_log(self.log_file,
+                  f"{Color.P}TaskMaker[init]    ({(t2 - t1):6.2f}s):{Color.RE} Deivce and seed initialization is complete, using device: {Color.B}{self.device}{Color.RE}, using seed: {Color.B}{self.args.seed}{Color.RE}")
 
         self.model = self._prepare_model().to(self.device)
         t3 = time.time()
-        print_log(self.log_file, f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete, Number of parameters: {Color.C}{sum([p.nelement() for p in self.model.parameters()])}{Color.RE}")
+        print_log(self.log_file,
+                  f"{Color.P}TaskMaker[init]    ({(t3 - t2):6.2f}s):{Color.RE} Model {Color.B}{self.args.model}{Color.RE} initialization is complete, Number of parameters: {Color.C}{sum([p.nelement() for p in self.model.parameters()])}{Color.RE}")
         self.DataProvider = self.data_dict[self.args.data].DataProvider(
-            self.args, self.args.scaler,self.device)
+            self.args, self.args.scaler, self.device)
         t4 = time.time()
-        print_log(self.log_file, f"{Color.P}TaskMaker[init]    ({(t4 - t3):6.2f}s):{Color.RE} Created DataProvider: {Color.B}{self.data_dict[self.args.data]}")
+        print_log(self.log_file,
+                  f"{Color.P}TaskMaker[init]    ({(t4 - t3):6.2f}s):{Color.RE} Created DataProvider: {Color.B}{self.data_dict[self.args.data]}")
         self.train_loader = self.DataProvider.data_loader("train")
         self.valid_loader = self.DataProvider.data_loader("valid")
         self.test_loader = self.DataProvider.data_loader("test")
-        print_log(self.log_file, f"{Color.P}TaskMaker[init]    ({(time.time() - t4):6.2f}s):{Color.RE} Created dataloader! {Color.G}Train: {len(self.train_loader)}{Color.RE}, {Color.Y}Valid: {len(self.valid_loader)}{Color.RE}, {Color.R}Test: {len(self.test_loader)}{Color.RE}. {Color.P}TaskMaker initialization is complete, time cost: ({(time.time() - t1):6.2f}s):{Color.RE}.")
+        print_log(self.log_file,
+                  f"{Color.P}TaskMaker[init]    ({(time.time() - t4):6.2f}s):{Color.RE} Created dataloader! {Color.G}Train: {len(self.train_loader)}{Color.RE}, {Color.Y}Valid: {len(self.valid_loader)}{Color.RE}, {Color.R}Test: {len(self.test_loader)}{Color.RE}. {Color.P}TaskMaker initialization is complete, time cost: ({(time.time() - t1):6.2f}s):{Color.RE}.")
 
         # Needs to be implemented in subclass:
         self.model_optimizer = None
         self.model_criterion = None
-
-
 
     def _prepare_device_seed(self):
         """
@@ -73,10 +75,16 @@ class BasicTask:
     def train(self):
         raise NotImplementedError
 
-    # def valid(self):
-    #     raise NotImplementedError
-    #
-    # def test(self):
-    #     raise NotImplementedError
+    def valid(self):
+        raise NotImplementedError
 
+    def test(self):
+        raise NotImplementedError
 
+    def load_model(self, model_path):
+        t1 = time.time()
+        self.model.load_state_dict(torch.load(model_path))
+        self.model.eval()
+        self.model.to(self.device)
+        print_log(self.log_file,
+                  f"{Color.P}TaskMaker[load]    ({(time.time() - t1):6.2f}s):{Color.RE} Load model from {Color.B}{model_path}{Color.RE}.")

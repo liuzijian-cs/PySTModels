@@ -28,9 +28,8 @@ task_dict = {
     'TimeSeriesForecast': TimeSeriesForecast,
 }
 
-# Main:
-if __name__ == '__main__':
-    # 1. Parser
+
+def args_parser():
     parser = argparse.ArgumentParser()  # Create the argument parser
 
     # 1.1 Basic config:
@@ -40,13 +39,13 @@ if __name__ == '__main__':
     parser.add_argument('--use_multi_gpu', type=bool, default=False, help='')
     parser.add_argument('--gpu_ids', type=str, default='0,1,2,3', help='GPU device id (multi gpu)')
     parser.add_argument('--num_workers', type=int, default=0, help='CPU workers, if Windows system == 0 !')
-    parser.add_argument('--log_interval_iter', type=int, default=20, help='log output every number of iter')
+    parser.add_argument('--log_interval_iter', type=int, default=0, help='log output every number of iter')
     # 1.2.1 Base path config
     parser.add_argument('--model_save_path', type=str, default='./model_save')
     parser.add_argument('--log_file', type=str, default='./model_save/logs/logs.txt')
     parser.add_argument('--pic_save_path', type=str, default='./model_save/pictures')
 
-    parser.add_argument('--model', type=str, default='LSTM',
+    parser.add_argument('--model', type=str, default='iTransformer_official',
                         help='model list: [iTransformer, iTransformer_official]')
     parser.add_argument('--task', type=str, default='TimeSeriesForecast',
                         help='task list:[Task]')
@@ -54,9 +53,9 @@ if __name__ == '__main__':
 
     # 1.2 Data arguments:
     # 1.2.1 Basic
-    parser.add_argument('--data', type=str, default='SST',
+    parser.add_argument('--data', type=str, default='PEMS',
                         help='data list: [PEMS, SST], new dataset pls conf in utils/dataset_conf')
-    parser.add_argument('--data_path', type=str, default='./data/SST/Nan_Hai.csv')
+    parser.add_argument('--data_path', type=str, default='./data/PEMS/PEMS08.npz')
 
     # 1.2.2 Forecasting Task
     parser.add_argument('--features', type=str, default='M',
@@ -73,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_ratio', type=float, default=0.2, help='test ratio')
 
     # 1.2 Model arguments:
-    parser.add_argument('--epochs', type=int, default=100, help='number of train epochs')
+    parser.add_argument('--epochs', type=int, default=50, help='number of train epochs')
     parser.add_argument('--batch_size', type=int, default=64, help='Based on the size of the GPU memory')
     parser.add_argument('--early_stopping', type=int, default=7, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0005, help='learning rate')
@@ -93,14 +92,16 @@ if __name__ == '__main__':
     parser.add_argument('--channel_independence', type=bool, default=False, help='channel_independence')
     # Ablation experiment
     parser.add_argument('--output_attention', type=bool, default=False, help='return the attention matrix')
-
-    # TimeSeries:
-
-    # 1.2
-    # 1.2 Model:
-    # Common Parameter:
-
     args = parser.parse_args()
+    return args
+
+
+# Main:
+if __name__ == '__main__':
+    # 1. Parser
+    args = args_parser()
+
+    # Initialize the log file:
     logfile = open(args.log_file, "w")
 
     # 2. Initialization:
@@ -109,4 +110,7 @@ if __name__ == '__main__':
 
     Task = task_dict[args.task].Task(args, model_dict, data_dict)
     Task.train()
-    Task.draw_predictions("test")
+    # Task.draw_predictions("test")
+    # model_path = "./model_save/epoch-040.pth"
+    # Task.load_model(model_path)
+    # Task.draw_predictions('valid', 1)
